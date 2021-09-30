@@ -1,0 +1,8 @@
+numpy
+jsonlines
+matplotlib
+scikit-learn
+jupyterlab
+wandb
+torchaudio
+PyYAML==5.4.1
