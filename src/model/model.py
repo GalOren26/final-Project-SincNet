@@ -133,22 +133,24 @@ class MS_SincResNet(nn.Module):
         super(MS_SincResNet, self).__init__()
         self.layerNorm = nn.LayerNorm([1, chunk_len])
         kernel1 = 251
-        out_channels = 80
+        kernel2 = 501
+        kernel3 = 1001
+        out_channels = 40
         self.sincNet1 = nn.Sequential(
             SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.sincNet2 = nn.Sequential(
-            SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
+            SincConv(1, out_channels, kernel1, padding=(kernel2 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.sincNet3 = nn.Sequential(
-            SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
+            SincConv(1, out_channels, kernel1, padding=(kernel3 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.resnet = myResnet(pretrained=True)
 
     def forward(self, x):

@@ -7,7 +7,6 @@ data:
 # model
 model:
   type: sinc
-  # pretrain: "model/sinc.pt"
   pretrain: null
 
 # sound
@@ -17,11 +16,11 @@ chunk_shift_ratio: 0.01
 
 # optimization
 lr: 0.001
-batch_size: 128
+batch_size: 64
 n_epochs: 2000 #1500
 
 # other
 device: "cuda:0"
-verbose_every: 100
+verbose_every: 200
 save_path: "model/"
 use_wandb: false

@@ -1,17 +1,18 @@
-import yaml
-import typing as tp
-import os
-
-from torch.utils.data import DataLoader
-import torch.nn as nn
-import torch.optim
-# import wandb  # sudo apt install libpython3.7-dev python3.7 -m pip install wandb
-import numpy as np
-
-from datasets.timit import TimitTrain, TimitEval
-from model.model import MS_SincResNet, SincNet
-from utils import NestedNamespace, compute_chunk_info
 import matplotlib.pyplot as plt
+from utils import NestedNamespace, compute_chunk_info
+from model.model import MS_SincResNet
+from datasets.timit import TimitTrain, TimitEval
+import numpy as np
+import torch.optim
+import torch.nn as nn
+from torch.utils.data import DataLoader
+import torch
+import os
+import typing as tp
+import yaml
+# torch.cuda.empty_cache()
+torch.cuda.memory_summary(device=None, abbreviated=False)
+# import wandb  # sudo apt install libpython3.7-dev python3.7 -m pip install wandb
 
 
 def PlotAccuracy(Accuracy):
@@ -61,9 +62,7 @@ def main(params: NestedNamespace):
     dataloader = DataLoader(dataset_train, batch_size=params.batch_size,
                             shuffle=True, drop_last=True)
 
-    # sinc_net = MS_SincResNet()
-    sinc_net = SincNet(
-        chunk_len, params.data.timit.n_classes, params.model.type)
+    sinc_net = MS_SincResNet()
     sinc_net = sinc_net.to(params.device)
     optim = torch.optim.RMSprop(
         sinc_net.parameters(), lr=params.lr, alpha=0.95, eps=1e-8)
@@ -80,6 +79,7 @@ def main(params: NestedNamespace):
         accuracy, losses = [], []
         sinc_net.train()
         for j, batch in enumerate(dataloader):
+         #   print(torch.cuda.memory_summary(device=None, abbreviated=False))
             optim.zero_grad()
             chunks, labels = batch
             chunks, labels = chunks.to(params.device), labels.to(params.device)
@@ -113,13 +113,13 @@ def main(params: NestedNamespace):
                 print(f'epoch {i}\ntrain accuracy {np.mean(accuracy*100)}%\ntrain loss {np.mean(losses)} \n'
                       f'test loss {LossPlot[-1]}%\n'
                       f'test wav accuracy {(TestAcc[-1])*100}%')
-                if len(TestAcc) > 1:
-                    if TestAcc[-1] > TestAcc[-2]:
+                if i % (params.verbose_every) == 0 and i != 0:
+                    if (TestAcc[-1] > TestAcc[-2]):
                         torch.save(
                             {'model_state_dict': sinc_net.state_dict(
                             ), 'optimizer_state_dict': optim.state_dict(), 'epoch': i},
-                            os.path.join(params.save_path, params.model.type+'.pt'))
-                        print("saved model!! ")
+
+                            os.path.join(params.save_path, params.model.type + str(i) + '.pt'))
     PlotAccuracy(TestAcc)
     PlotLoss(LossPlot)
 
