@@ -1,2 +1,2 @@
-# finalProjectSincNet
-finalProjectSincNet in Tau university 
+# final_project
+SincNet

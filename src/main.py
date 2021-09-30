@@ -14,12 +14,13 @@ from utils import NestedNamespace, compute_chunk_info
 import matplotlib.pyplot as plt
 
 
-def PlotAccuracy(Accuracy):
-    print(Accuracy)
-    len_Accuracy = range(len(Accuracy))
-    plt.plot(len_Accuracy, Accuracy, label='Accuracy', color='green')
+def PlotAccuracy(Accuracy, verbose_every):
+    x = [x*100 for x in range(0, len(Accuracy)
+                              * verbose_every, verbose_every)]
+    y = [y*100 for y in Accuracy]
+    plt.plot(x, y, label='Accuracy', color='green')
     plt.xlabel('epoch')
-    plt.ylabel('Accuracy')
+    plt.ylabel('Accuracy [%]')
     plt.legend(loc='lower left')
     plt.grid(True)
     plt.tight_layout()
@@ -30,12 +31,13 @@ def PlotAccuracy(Accuracy):
     plt.close()
 
 
-def PlotLoss(loss):
-    print(loss)
-    len_loss = range(len(loss))
-    plt.plot(len_loss, loss, label='Loss', color='red')
+def PlotLoss(loss, verbose_every):
+    x = [x for x in range(0,
+                          len(loss)*verbose_every, verbose_every)]
+    y = [y*100 for y in loss]
+    plt.plot(x, y, label='Loss', color='red')
     plt.xlabel('epoch')
-    plt.ylabel('Loss')
+    plt.ylabel('Loss [%]')
     plt.legend(loc='lower left')
     plt.grid(True)
     plt.tight_layout()
@@ -52,6 +54,7 @@ def compute_accuracy(logits: torch.Tensor, labels: tp.Union[torch.Tensor, int]) 
 
 
 def main(params: NestedNamespace):
+    # PlotLoss([0.15, 0.3, 0.45], params.verbose_every)
     TestAcc = []
     LossPlot = []
     chunk_len, chunk_shift = compute_chunk_info(params)
@@ -120,8 +123,13 @@ def main(params: NestedNamespace):
                             ), 'optimizer_state_dict': optim.state_dict(), 'epoch': i},
                             os.path.join(params.save_path, params.model.type+'.pt'))
                         print("saved model!! ")
-    PlotAccuracy(TestAcc)
-    PlotLoss(LossPlot)
+    PlotAccuracy(TestAcc, params.verbose_every)
+    PlotLoss(LossPlot, params.verbose_every)
+    print(TestAcc)
+    print(LossPlot)
+    f = open("TestAccLoss.txt", "w")
+    f.write(f"test Acc: \n {TestAcc}\n")
+    f.write(f"test Loss: \n {LossPlot}")
 
 
 if __name__ == "__main__":
