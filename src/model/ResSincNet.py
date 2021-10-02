@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.SincNet import SincConv
+from model.model import SincConv
 
 
 class myResnet(nn.Module):
@@ -31,17 +31,17 @@ class ResSincNet(nn.Module):
             SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.sincNet2 = nn.Sequential(
             SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.sincNet3 = nn.Sequential(
             SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
-            nn.AdaptiveAvgPool1d(1024))
+            nn.AdaptiveAvgPool1d(256))
         self.resnet = myResnet(pretrained=True)
 
     def forward(self, x):

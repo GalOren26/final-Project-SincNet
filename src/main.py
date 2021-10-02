@@ -9,47 +9,13 @@ import torch.optim
 import numpy as np
 
 from datasets.timit import TimitTrain, TimitEval
-from model.SincNet import SincNet
-from utils import NestedNamespace, compute_chunk_info
-import matplotlib.pyplot as plt
-from model.ResSincNet import ResSincNet
 
+from utils import NestedNamespace, compute_chunk_info, PlotAccuracy, PlotLoss
+
+from model.ResSincNet import ResSincNet
 from model.MFCC import mfcc
 from model.SincNet import SincNet
-
-
-def PlotAccuracy(Accuracy, verbose_every):
-    x = [x for x in range(0, len(Accuracy)
-                          * verbose_every, verbose_every)]
-    y = [y*100 for y in Accuracy]
-    plt.plot(x, y, label='Accuracy', color='green')
-    plt.xlabel('epoch')
-    plt.ylabel('Accuracy [%]')
-    plt.legend(loc='lower left')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.title('Accuracy')
-    path = "currentAccuracy.png"
-    plt.savefig(path)
-    plt.show()
-    plt.close()
-
-
-def PlotLoss(loss, verbose_every):
-    x = [x for x in range(0,
-                          len(loss)*verbose_every, verbose_every)]
-    y = [y*100 for y in loss]
-    plt.plot(x, y, label='Loss', color='red')
-    plt.xlabel('epoch')
-    plt.ylabel('Loss [%]')
-    plt.legend(loc='lower left')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.title('Loss')
-    path = "currentLoss.png"
-    plt.savefig(path)
-    plt.show()
-    plt.close()
+from model.model import SincConv
 
 
 def compute_accuracy(logits: torch.Tensor, labels: tp.Union[torch.Tensor, int]) -> float:
@@ -62,6 +28,8 @@ def main(params: NestedNamespace):
     TestAcc = []
     LossPlot = []
     chunk_len, chunk_shift = compute_chunk_info(params)
+
+    # load data train and test
     dataset_train = TimitTrain(params.data.timit.path, chunk_len=chunk_len)
     dataset_evaluation = TimitEval(
         params.data.timit.path, chunk_len, chunk_shift, 'test.scp')
@@ -70,10 +38,15 @@ def main(params: NestedNamespace):
 
     # sinc_net = MS_SincResNet()
     if(params.model.type == "mfcc"):
-        net = mfcc(chunk_len, params.device, params.n_classes)
-    else:
+        net = mfcc(chunk_len, params.device, params.data.timit.n_classes)
+    elif(params.model.type == "sinc"):
         net = SincNet(
-            chunk_len, params.data.timit.n_classes, params.model.type)
+            chunk_len, params.data.timit.n_classes,  SincConv)
+    elif(params.model.type == "cnn"):
+        net = SincNet(
+            chunk_len, params.data.timit.n_classes,  nn.Conv1d)
+    else:
+        net = ResSincNet()
     net = net.to(params.device)
     optim = torch.optim.RMSprop(
         net.parameters(), lr=params.lr, alpha=0.95, eps=1e-8)
@@ -143,12 +116,9 @@ if __name__ == "__main__":
     with open('configs/cfg.yaml') as config:
         params = yaml.load(config, Loader=yaml.FullLoader)
         params = NestedNamespace(params)
-    if params.model.type not in ['cnn', 'sinc', "mfcc"]:
+    if params.model.type not in ['cnn', 'sinc', "mfcc", "resNet"]:
         raise ValueError(
             "Only those models are supported, use cnn , sinc or mfcc.")
-    if params.use_wandb:
-        id = wandb.util.generate_id()
-        print("id", id)
-        wandb.init(project='SincNet', id=id, resume="allow",
-                   config={'model type': params.model.type})
+    if params.model.type == "mfcc":
+        params.chunk_len_ratio = 0.4
     main(params)

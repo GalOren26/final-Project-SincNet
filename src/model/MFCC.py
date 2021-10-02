@@ -33,19 +33,23 @@ class mfcc(nn.Module):
     def __init__(self, chunk_len, device, n_classes):
         super().__init__()
         self.num_mfcc = 33
-        ln1 = nn.LayerNorm(chunk_len)
+        self.ln1 = nn.LayerNorm(chunk_len)
         self.mfcc = MFCC(n_mfcc=33).to(device)
-        cnn_blocks = nn.Sequential(CONV2dblock(1, 32, 3),
-                                   CONV2dblock(32, 32*2, 3),
-                                   CONV2dblock(32*2, 32*3, 3))
-        flatten = nn.Flatten(start_dim=1)
-        ln2 = nn.BatchNorm2d(96)
-        mlp_blocks = nn.Sequential(MLPBlock((32*32)//64*96, 2048),
-                                   MLPBlock(2048, 2048),
-                                   MLPBlock(2048, 2048))
-        self.backbone = nn.Sequential(
-            ln1, cnn_blocks, flatten, ln2, mlp_blocks)
+        self.cnn_blocks = nn.Sequential(CONV2dblock(1, 32, 3),
+                                        CONV2dblock(32, 32*2, 3),
+                                        CONV2dblock(32*2, 32*3, 3))
+        self.flatten = nn.Flatten(start_dim=1)
+        self.ln2 = nn.LayerNorm((32*32)//64*96)
+        self.mlp_blocks = nn.Sequential(MLPBlock((32*32)//64*96, 2048),
+                                        MLPBlock(2048, 2048),
+                                        MLPBlock(2048, 2048))
         self.classification_head = nn.Linear(2048, n_classes)
 
     def forward(self, wavs):
-        return self.classification_head(self.backbone(wavs))
+        x = self.ln1(wavs)
+        x = self.mfcc(x)
+        x = self.cnn_blocks(x)
+        x = self.flatten(x)
+        x = self.ln2(x)
+        x = self.mlp_blocks(x)
+        return self.classification_head(x)
