@@ -6,13 +6,13 @@ data:
 
 # model
 model:
-  type: sinc
+  type: mfcc
   # pretrain: "model/sinc.pt"
   pretrain: null
 
 # sound
 sample_rate: 16000
-chunk_len_ratio: 0.2
+chunk_len_ratio: 0.4
 chunk_shift_ratio: 0.01
 
 # optimization
