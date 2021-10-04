@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim
 import numpy as np
-
+import wget
 from datasets.timit import TimitTrain, TimitEval
 
 from utils import NestedNamespace, compute_chunk_info, PlotAccuracy, PlotLoss
@@ -111,6 +111,7 @@ def main(params: NestedNamespace):
 
 if __name__ == "__main__":
     with open('configs/cfg.yaml') as config:
+        wget.download("https://data.deepai.org/timit.zip")
         params = yaml.load(config, Loader=yaml.FullLoader)
         params = NestedNamespace(params)
     if params.model.type not in ['cnn', 'sinc', "mfcc", "resincNet"]:
