@@ -1,4 +1,4 @@
-ResincNet
+# ResincNet
 #intro : this is our final project for deep learning course. 
 In this project we implemented  a new archticture called ResincNet base on SincNet && ResNet architectures that try to give a new soultion to the speaker verfication problem. 
 we appends 1D multi-scale SincNet to 2D ResNet as the first convolutional layer in an attempt to learn 1D filtters and 2D fillters during the training stage,we demonstrate that our proposed archticture preform better than  the baseline SincNet and many well-known hand-crafted features on the Timit dataset.
