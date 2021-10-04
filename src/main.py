@@ -111,7 +111,7 @@ def main(params: NestedNamespace):
 
 if __name__ == "__main__":
     with open('configs/cfg.yaml') as config:
-        wget.download("https://data.deepai.org/timit.zip")
+        # wget.download("https://data.deepai.org/timit.zip")
         params = yaml.load(config, Loader=yaml.FullLoader)
         params = NestedNamespace(params)
     if params.model.type not in ['cnn', 'sinc', "mfcc", "resincNet"]:
