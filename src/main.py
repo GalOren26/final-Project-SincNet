@@ -5,14 +5,13 @@ import torchaudio.transforms
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim
-# import wandb  # sudo apt install libpython3.7-dev python3.7 -m pip install wandb
 import numpy as np
 
 from datasets.timit import TimitTrain, TimitEval
 
 from utils import NestedNamespace, compute_chunk_info, PlotAccuracy, PlotLoss
 
-from model.ResSincNet import ResSincNet
+from model.ResincNet import ResincNet
 from model.MFCC import mfcc
 from model.SincNet import SincNet
 from model.model import SincConv
@@ -24,7 +23,6 @@ def compute_accuracy(logits: torch.Tensor, labels: tp.Union[torch.Tensor, int]) 
 
 
 def main(params: NestedNamespace):
-    # PlotLoss([0.15, 0.3, 0.45], params.verbose_every)
     TestAcc = []
     LossPlot = []
     chunk_len, chunk_shift = compute_chunk_info(params)
@@ -36,7 +34,6 @@ def main(params: NestedNamespace):
     dataloader = DataLoader(dataset_train, batch_size=params.batch_size,
                             shuffle=True, drop_last=True)
 
-    # sinc_net = MS_SincResNet()
     if(params.model.type == "mfcc"):
         net = mfcc(chunk_len, params.device, params.data.timit.n_classes)
     elif(params.model.type == "sinc"):
@@ -46,7 +43,7 @@ def main(params: NestedNamespace):
         net = SincNet(
             chunk_len, params.data.timit.n_classes,  nn.Conv1d)
     else:
-        net = ResSincNet()
+        net = ResincNet()
     net = net.to(params.device)
     optim = torch.optim.RMSprop(
         net.parameters(), lr=params.lr, alpha=0.95, eps=1e-8)
@@ -116,7 +113,7 @@ if __name__ == "__main__":
     with open('configs/cfg.yaml') as config:
         params = yaml.load(config, Loader=yaml.FullLoader)
         params = NestedNamespace(params)
-    if params.model.type not in ['cnn', 'sinc', "mfcc", "resNet"]:
+    if params.model.type not in ['cnn', 'sinc', "mfcc", "resincNet"]:
         raise ValueError(
             "Only those models are supported, use cnn , sinc or mfcc.")
     if params.model.type == "mfcc":

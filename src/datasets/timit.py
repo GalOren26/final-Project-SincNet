@@ -23,7 +23,7 @@ class TimitTrain(Dataset):
         wav, sr = torchaudio.load(os.path.join(self.path, wav_path))
         start = np.random.randint(len(wav[0]) - self.chunk_len)
         chunk = wav[0, start:start + self.chunk_len]
-        volume_gain = 0.4 * torch.rand(1) + 0.8
+        volume_gain = 0.4 * torch.randn(1) + 0.8
         return torch.unsqueeze(chunk, 0) * volume_gain, label
 
 

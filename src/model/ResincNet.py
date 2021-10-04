@@ -10,9 +10,9 @@ import torch.nn.functional as F
 from model.model import SincConv
 
 
-class myResnet(nn.Module):
+class Resnet(nn.Module):
     def __init__(self, pretrained=True, channel_output=462):
-        super(myResnet, self).__init__()
+        super(Resnet, self).__init__()
         self.model = models.resnet18(pretrained=True)
         self.model.fc = nn.Linear(512, channel_output, bias=True)
 
@@ -21,11 +21,13 @@ class myResnet(nn.Module):
         return x
 
 
-class ResSincNet(nn.Module):
+class ResincNet(nn.Module):
     def __init__(self, sample_rate=16000, chunk_len=3200, n_classes=462):
-        super(ResSincNet, self).__init__()
+        super(ResincNet, self).__init__()
         self.layerNorm = nn.LayerNorm([1, chunk_len])
         kernel1 = 251
+        kernel1 = 501
+        kernel1 = 1001
         out_channels = 80
         self.sincNet1 = nn.Sequential(
             SincConv(1, out_channels, kernel1, padding=(kernel1 - 1) // 2),
@@ -42,7 +44,7 @@ class ResSincNet(nn.Module):
             nn.BatchNorm1d(out_channels),
             nn.ReLU(inplace=True),
             nn.AdaptiveAvgPool1d(256))
-        self.resnet = myResnet(pretrained=True)
+        self.resnet = Resnet(pretrained=True)
 
     def forward(self, x):
         x = self.layerNorm(x)
